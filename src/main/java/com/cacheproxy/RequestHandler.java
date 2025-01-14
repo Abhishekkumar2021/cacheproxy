@@ -21,9 +21,16 @@ public class RequestHandler implements HttpHandler {
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
+        String path = exchange.getRequestURI().getPath();
+        // Handle the clear-cache endpoint
+        if ("GET".equalsIgnoreCase(exchange.getRequestMethod()) && "/clear-cache".equals(path)) {
+            cacheManager.clearCache();
+            sendResponse(exchange, "Cache cleared successfully!".getBytes(), 200, "CLEAR");
+            return;
+        }
+        
         String cacheKey = generateCacheKey(exchange);
         CacheObject cachedResponse = cacheManager.getCache(cacheKey);
-
         if (cachedResponse != null) {
             sendResponse(exchange, cachedResponse.getResponseBody(), cachedResponse.getStatusCode(), "HIT");
         } else {
